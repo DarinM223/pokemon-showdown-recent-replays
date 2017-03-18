@@ -1,0 +1,16 @@
+[package]
+name = "pokemon_showdown_recent_replays"
+version = "0.1.0"
+authors = ["Darin Minamoto <darinm223@gmail.com>"]
+
+[dependencies]
+serde = "0.9"
+serde_json = "0.9"
+serde_derive = "0.9"
+futures = "0.1.7"
+tokio-core = "0.1"
+kuchiki = "0.4"
+
+[dependencies.hyper]
+branch = "master"
+git = "https://github.com/hyperium/hyper"
