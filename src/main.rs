@@ -17,8 +17,8 @@ use hyper::client::{Client, HttpConnector};
 use hyper::header::ContentLength;
 use hyper::server::{Http, Request, Response, Service};
 use kuchiki::traits::*;
+use std::rc::Rc;
 use std::str;
-use std::sync::Arc;
 use tokio_core::net::TcpListener;
 use tokio_core::reactor::{Core, Handle};
 
@@ -37,14 +37,14 @@ struct ShowdownReplayService {
     /// Pokemon Showdown replay page.
     client: Client<HttpConnector>,
     /// Thread pool for running scraping work.
-    pool: Arc<CpuPool>,
+    pool: Rc<CpuPool>,
 }
 
 impl ShowdownReplayService {
     fn new(handle: Handle) -> ShowdownReplayService {
         ShowdownReplayService {
             client: Client::new(&handle),
-            pool: Arc::new(CpuPool::new(NUM_CPUS)),
+            pool: Rc::new(CpuPool::new(NUM_CPUS)),
         }
     }
 }
