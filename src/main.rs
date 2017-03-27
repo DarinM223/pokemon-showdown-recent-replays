@@ -12,9 +12,10 @@ use futures::future;
 use futures::Future;
 use futures::Stream;
 use futures_cpupool::CpuPool;
-use hyper::{Error, Get, StatusCode, Url};
+use hyper::{Error, Get, StatusCode, Uri};
+use hyper::client;
 use hyper::client::{Client, HttpConnector};
-use hyper::header::ContentLength;
+use hyper::header::{Accept, ContentLength, UserAgent};
 use hyper::server::{Http, Request, Response, Service};
 use kuchiki::traits::*;
 use std::rc::Rc;
@@ -22,7 +23,7 @@ use std::str;
 use tokio_core::net::TcpListener;
 use tokio_core::reactor::{Core, Handle};
 
-const REPLAY_URL: &'static str = "http://replay.pokemonshowdown.com";
+const REPLAY_URL: &'static str = "http://replay.pokemonshowdown.com/";
 const NUM_CPUS: usize = 4;
 
 /// JSON representation of the replays sent out as a response.
@@ -58,9 +59,13 @@ impl Service for ShowdownReplayService {
     fn call(&self, req: Self::Request) -> Self::Future {
         match (req.method(), req.path()) {
             (&Get, "/") => {
-                let url = Url::parse(REPLAY_URL).unwrap();
+                let url = REPLAY_URL.parse::<Uri>().unwrap();
+                let mut replay_req = client::Request::new(Get, url);
+                replay_req.headers_mut().set(UserAgent("RecentReplays/1.0.0".to_string()));
+                replay_req.headers_mut().set(Accept::star());
+
                 let pool = self.pool.clone();
-                let get_replays = self.client.get(url).and_then(|res| {
+                let get_replays = self.client.request(replay_req).and_then(|res| {
                     res.body()
                         // Collect the body chunks into a string.
                         .fold(vec![], |mut body, chunk| {
